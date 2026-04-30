@@ -1,37 +1,34 @@
 import 'package:flutter/material.dart';
-
+import 'package:google_fonts/google_fonts.dart';
+import 'package:pro_link/actors/intern/intern.dart';
+import '../welcome/welcome.dart';
+import 'actors/mentor/mentor.dart';
+import 'actors/admin/admin.dart';
 void main() {
-  runApp(const ProLinkApp());
+  runApp(const MyApp());
 }
 
-class ProLinkApp extends StatelessWidget {
-  const ProLinkApp({super.key});
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Pro-Link',
+
       theme: ThemeData(
-        primarySwatch: Colors.blue,
+        useMaterial3: true,
+        colorScheme: const ColorScheme.light(
+          primary: Color(0xFF3B3B6D),
+          secondary: Color(0xFF000000)
+        ),
+        scaffoldBackgroundColor: const Color(0xFFF6F6F8),
+        textTheme: GoogleFonts.interTextTheme(),
       ),
-      home: const LoginPage(),
-    );
-  }
-}
 
-class LoginPage extends StatelessWidget {
-  const LoginPage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text("Pro-Link Login"),
-      ),
-      body: const Center(
-        child: Text("Login Page"),
-      ),
+     // home: const AdminPage(),
+     home: const MentorPage(),
+     // home: const InternPage(),
     );
   }
 }
