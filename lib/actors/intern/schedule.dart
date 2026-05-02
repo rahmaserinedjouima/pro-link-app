@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:pro_link/services/user_service.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class SchedulePage extends StatefulWidget {
   const SchedulePage({super.key});
@@ -8,49 +10,29 @@ class SchedulePage extends StatefulWidget {
 }
 
 class _SchedulePageState extends State<SchedulePage> {
-
-  List<Map<String, dynamic>> schedule = [];
+  List<dynamic> schedules = [];
+  bool isLoading = true;
 
   @override
   void initState() {
     super.initState();
-    loadSchedule();
+    loadSchedules();
+  }
+  void openPdf(String filePath) async {
+    final url = Uri.parse("http://localhost/flutter_api/$filePath");
+
+    await launchUrl(
+      url,
+      mode: LaunchMode.externalApplication,
+    );
   }
 
-  void loadSchedule() {
+  void loadSchedules() async {
+    final data = await UserService.getSchedules();
+    print(data);
     setState(() {
-      schedule = [
-        {
-          "day": "Sunday",
-          "time": "09:00 - 11:00",
-          "task": "Evaluation & Feedback",
-          "color": Colors.red,
-        },
-        {
-          "day": "Monday",
-          "time": "08:00 - 12:00",
-          "task": "Software Development Training",
-          "color": Colors.blue,
-        },
-        {
-          "day": "Tuesday",
-          "time": "09:00 - 13:00",
-          "task": "Project Work with Mentor",
-          "color": Colors.green,
-        },
-        {
-          "day": "Wednesday",
-          "time": "10:00 - 14:00",
-          "task": "Database Practice & Tasks",
-          "color": Colors.orange,
-        },
-        {
-          "day": "Thursday",
-          "time": "08:00 - 12:00",
-          "task": "Team Collaboration Session",
-          "color": Colors.purple,
-        },
-      ];
+      schedules = data;
+      isLoading = false;
     });
   }
 
@@ -64,15 +46,16 @@ class _SchedulePageState extends State<SchedulePage> {
         backgroundColor: const Color(0xFF3B3B6D),
       ),
 
-      body: Padding(
+      body: isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : Padding(
         padding: const EdgeInsets.all(16),
 
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-
             const Text(
-              "Weekly Internship Schedule",
+              "Uploaded Schedules",
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
@@ -83,16 +66,24 @@ class _SchedulePageState extends State<SchedulePage> {
             const SizedBox(height: 15),
 
             Expanded(
-              child: ListView.builder(
-                itemCount: schedule.length,
+              child: schedules.isEmpty
+                  ? const Center(
+                child: Text("No schedules uploaded yet"),
+              )
+                  : ListView.builder(
+                itemCount: schedules.length,
                 itemBuilder: (context, index) {
-                  final item = schedule[index];
+                  final item = schedules[index];
 
-                  return _buildScheduleCard(
-                    day: item["day"],
-                    time: item["time"],
-                    task: item["task"],
-                    color: item["color"],
+                  return GestureDetector(
+                    onTap: () {
+                      openPdf(item["file_path"]);
+                    },
+                    child: _buildScheduleCard(
+                      title: item["title"],
+                      fileName: item["file_name"],
+                      filePath: item["file_path"],
+                    ),
                   );
                 },
               ),
@@ -104,14 +95,12 @@ class _SchedulePageState extends State<SchedulePage> {
   }
 
   Widget _buildScheduleCard({
-    required String day,
-    required String time,
-    required String task,
-    required Color color,
+    required String title,
+    required String fileName,
+    required String filePath,
   }) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
-
       padding: const EdgeInsets.all(15),
 
       decoration: BoxDecoration(
@@ -129,14 +118,10 @@ class _SchedulePageState extends State<SchedulePage> {
 
       child: Row(
         children: [
-
-          Container(
-            width: 6,
-            height: 60,
-            decoration: BoxDecoration(
-              color: color,
-              borderRadius: BorderRadius.circular(10),
-            ),
+          const Icon(
+            Icons.picture_as_pdf,
+            color: Color(0xFF3B3B6D),
+            size: 35,
           ),
 
           const SizedBox(width: 12),
@@ -145,9 +130,8 @@ class _SchedulePageState extends State<SchedulePage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-
                 Text(
-                  day,
+                  title,
                   style: const TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.bold,
@@ -158,7 +142,7 @@ class _SchedulePageState extends State<SchedulePage> {
                 const SizedBox(height: 4),
 
                 Text(
-                  time,
+                  fileName,
                   style: const TextStyle(
                     fontSize: 12,
                     color: Colors.grey,
@@ -168,10 +152,10 @@ class _SchedulePageState extends State<SchedulePage> {
                 const SizedBox(height: 4),
 
                 Text(
-                  task,
+                  filePath,
                   style: const TextStyle(
-                    fontSize: 12,
-                    color: Colors.black,
+                    fontSize: 11,
+                    color: Colors.black54,
                   ),
                 ),
               ],

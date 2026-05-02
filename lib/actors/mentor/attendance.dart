@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:pro_link/services/user_service.dart';
 
 class AttendancePage extends StatefulWidget {
   const AttendancePage({super.key});
@@ -8,12 +9,17 @@ class AttendancePage extends StatefulWidget {
 }
 
 class _AttendancePageState extends State<AttendancePage> {
-  final List<String> interns = [
-    "Ahmed Benali",
-    "Sara Khelifa",
-    "Yacine Bouzid",
-    "Nour El Houda",
-  ];
+  List<dynamic> interns = [];
+  bool isLoading = true;
+
+  void loadInterns() async {
+    final data = await UserService.getAssignedInterns();
+
+    setState(() {
+      interns = data;
+      isLoading = false;
+    });
+  }
 
   final List<String> days = [
     "Sunday",
@@ -30,26 +36,33 @@ class _AttendancePageState extends State<AttendancePage> {
   @override
   void initState() {
     super.initState();
-
-    for (var day in days) {
-      attendance[day] = {};
-      for (var intern in interns) {
-        attendance[day]![intern] = "None";
-      }
-    }
+    loadInterns();
   }
 
-  void handleAttendance(String day, String intern, String status, {bool save = false}) {
-    if (save) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Attendance saved")),
-      );
-      return;
-    }
-
+  void handleAttendance(String day, String intern, String status) {
     setState(() {
+      attendance[day] ??= {};
       attendance[day]![intern] = status;
     });
+  }
+  void saveAttendance() async {
+    for (var intern in interns) {
+      String name = intern["name"];
+      String id = intern["id"].toString();
+      String status = attendance[selectedDay]?[name] ?? "None";
+
+      if (status != "None") {
+        await UserService.addAttendance(
+          id,
+          selectedDay,
+          status,
+        );
+      }
+    }
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text("Attendance saved")),
+    );
   }
 
   @override
@@ -135,11 +148,13 @@ class _AttendancePageState extends State<AttendancePage> {
             const SizedBox(height: 10),
 
             Expanded(
-              child: ListView.builder(
+              child: isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : ListView.builder(
                 itemCount: interns.length,
                 itemBuilder: (context, index) {
-                  String name = interns[index];
-                  String status = attendance[selectedDay]![name]!;
+                  String name = interns[index]["name"];
+                  String status = attendance[selectedDay]?[name] ?? "None";
 
                   return Container(
                     margin: const EdgeInsets.only(bottom: 10),
@@ -148,11 +163,9 @@ class _AttendancePageState extends State<AttendancePage> {
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(12),
                     ),
-
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-
                         Text(
                           name,
                           style: const TextStyle(
@@ -160,18 +173,14 @@ class _AttendancePageState extends State<AttendancePage> {
                             color: Color(0xFF3B3B6D),
                           ),
                         ),
-
                         Row(
                           children: [
-
                             _btn("P", Colors.green, status == "P", () {
                               handleAttendance(selectedDay, name, "P");
                             }),
-
                             _btn("A", Colors.red, status == "A", () {
                               handleAttendance(selectedDay, name, "A");
                             }),
-
                             _btn("L", Colors.orange, status == "L", () {
                               handleAttendance(selectedDay, name, "L");
                             }),
@@ -194,7 +203,7 @@ class _AttendancePageState extends State<AttendancePage> {
                   padding: const EdgeInsets.all(14),
                 ),
 
-                onPressed: () => handleAttendance("", "", "", save: true),
+                onPressed: saveAttendance,
 
                 child: const Text("Save Attendance"),
               ),

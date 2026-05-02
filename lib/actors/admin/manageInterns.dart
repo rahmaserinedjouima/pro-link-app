@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:pro_link/services/user_service.dart';
 
 class ManageInternsPage extends StatefulWidget {
   const ManageInternsPage({super.key});
@@ -9,11 +10,23 @@ class ManageInternsPage extends StatefulWidget {
 
 class _ManageInternsPageState extends State<ManageInternsPage> {
 
-  List<Map<String, String>> interns = [
-    {"name": "Ahmed Benali", "status": "Pending"},
-    {"name": "Sara Khelifa", "status": "Pending"},
-    {"name": "Yacine Bouzid", "status": "Approved"},
-  ];
+  List<Map<String, dynamic>> interns = [];
+  bool isLoading = true;
+  @override
+  void initState() {
+    super.initState();
+    loadInterns();
+  }
+  void loadInterns() async {
+    final data = await UserService.getUsers();
+
+    if (!mounted) return;
+
+    setState(() {
+      interns = List<Map<String, dynamic>>.from(data);
+      isLoading = false;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -25,22 +38,21 @@ class _ManageInternsPageState extends State<ManageInternsPage> {
         backgroundColor: const Color(0xFF3B3B6D),
       ),
 
-      body: Padding(
+      body: isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : Padding(
         padding: const EdgeInsets.all(16),
-
         child: ListView.builder(
           itemCount: interns.length,
           itemBuilder: (context, index) {
-            var intern = interns[index];
-
-            return _buildInternCard(index, intern);
+            return _buildInternCard(index, interns[index]);
           },
         ),
       ),
     );
   }
 
-  Widget _buildInternCard(int index, Map<String, String> intern) {
+  Widget _buildInternCard(int index, Map<String, dynamic> intern) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(12),
@@ -84,19 +96,49 @@ class _ManageInternsPageState extends State<ManageInternsPage> {
 
               IconButton(
                 icon: const Icon(Icons.check, color: Colors.green),
-                onPressed: () {
-                  setState(() {
-                    interns[index]["status"] = "Approved";
-                  });
+                onPressed: () async {
+                  final result = await UserService.updateUserStatus(
+                    intern["id"].toString(),
+                    "approved",
+                  );
+
+                  if (result["success"] == true) {
+                    setState(() {
+                      interns[index]["status"] = "approved";
+                    });
+
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text("Intern approved")),
+                    );
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text(result["message"])),
+                    );
+                  }
                 },
               ),
 
               IconButton(
                 icon: const Icon(Icons.close, color: Colors.red),
-                onPressed: () {
-                  setState(() {
-                    interns[index]["status"] = "Rejected";
-                  });
+                onPressed: () async {
+                  final result = await UserService.updateUserStatus(
+                    intern["id"].toString(),
+                    "rejected",
+                  );
+
+                  if (result["success"] == true) {
+                    setState(() {
+                      interns[index]["status"] = "rejected";
+                    });
+
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text("Intern rejected")),
+                    );
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text(result["message"])),
+                    );
+                  }
                 },
               ),
             ],

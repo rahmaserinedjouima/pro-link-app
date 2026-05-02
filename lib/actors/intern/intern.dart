@@ -5,6 +5,7 @@ import 'package:pro_link/actors/intern/workId.dart';
 
 import '../../welcome/welcome.dart';
 import 'marks.dart';
+import 'package:pro_link/actors/intern/internAttendance.dart';
 
 class InternPage extends StatelessWidget {
   const InternPage({super.key});
@@ -85,6 +86,18 @@ class InternPage extends StatelessWidget {
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => const MarksPage()),
+                );
+              },
+            ),
+            _buildCard(
+              title: "Attendance",
+              image: "assets/attendance.png",
+              icon: Icons.check_circle,
+              description: "View your attendance",
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const InternAttendancePage()),
                 );
               },
             ),
