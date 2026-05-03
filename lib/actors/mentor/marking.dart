@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:pro_link/services/user_service.dart';
 
 class MarkingPage extends StatefulWidget {
   const MarkingPage({super.key});
@@ -8,66 +9,102 @@ class MarkingPage extends StatefulWidget {
 }
 
 class _MarkingPageState extends State<MarkingPage> {
-
   final TextEditingController _markController = TextEditingController();
   final TextEditingController _feedbackController = TextEditingController();
 
-  String selectedModule = "Flutter Development";
+  List<dynamic> interns = [];
+  String? selectedIntern;
+  bool isLoading = true;
 
-  final List<String> modules = [
-    "Flutter Development",
-    "Database Design",
-    "Team Collaboration",
-    "Problem Solving",
-  ];
-
-  // 📊 STORE EVALUATIONS HERE
   List<Map<String, dynamic>> evaluations = [];
 
-  // 📌 UPDATE PERFORMANCE FUNCTION
-  void updatePerformance() {
-    if (_markController.text.isEmpty || _feedbackController.text.isEmpty) {
+  @override
+  void initState() {
+    super.initState();
+    loadInterns();
+    loadEvaluations();
+  }
+  void loadEvaluations() async {
+    final data = await UserService.getEvaluations();
+
+    setState(() {
+      evaluations = data.map<Map<String, dynamic>>((item) {
+        return {
+          "intern": item["intern_name"],
+          "mark": item["mark"],
+          "feedback": item["feedback"],
+        };
+      }).toList();
+    });
+  }
+
+  void loadInterns() async {
+    final data = await UserService.getAssignedInterns();
+
+    setState(() {
+      interns = data;
+      isLoading = false;
+    });
+  }
+
+  void updatePerformance() async {
+    if (selectedIntern == null ||
+        _markController.text.isEmpty ||
+        _feedbackController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Please fill all fields")),
       );
       return;
     }
 
-    setState(() {
-      evaluations.add({
-        "module": selectedModule,
-        "mark": _markController.text,
-        "feedback": _feedbackController.text,
+    final result = await UserService.addEvaluation(
+      selectedIntern!,
+      _markController.text,
+      _feedbackController.text,
+    );
+
+    if (result["success"] == true) {
+      final internName = interns.firstWhere(
+            (user) => user["id"].toString() == selectedIntern,
+      )["name"];
+
+      setState(() {
+        evaluations.add({
+          "intern": internName,
+          "mark": _markController.text,
+          "feedback": _feedbackController.text,
+        });
+
+        selectedIntern = null;
+        _markController.clear();
+        _feedbackController.clear();
       });
 
-      _markController.clear();
-      _feedbackController.clear();
-    });
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text("Evaluation saved successfully"),
-      ),
-    );
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Evaluation saved successfully")),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(result["message"])),
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF5F6FA),
-
       appBar: AppBar(
         title: const Text("Evaluate Intern"),
         backgroundColor: const Color(0xFF3B3B6D),
       ),
-
-      body: Padding(
+      body: isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : Padding(
         padding: const EdgeInsets.all(16),
-
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-
             const Text(
               "Intern Evaluation Form",
               style: TextStyle(
@@ -79,8 +116,7 @@ class _MarkingPageState extends State<MarkingPage> {
 
             const SizedBox(height: 20),
 
-            // 📌 MODULE
-            const Text("Select module"),
+            const Text("Select intern"),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12),
               decoration: BoxDecoration(
@@ -88,20 +124,19 @@ class _MarkingPageState extends State<MarkingPage> {
                 borderRadius: BorderRadius.circular(12),
               ),
               child: DropdownButton<String>(
-                value: selectedModule,
+                value: selectedIntern,
+                hint: const Text("Choose intern"),
                 isExpanded: true,
                 underline: const SizedBox(),
-
-                items: modules.map((module) {
-                  return DropdownMenuItem(
-                    value: module,
-                    child: Text(module),
+                items: interns.map((intern) {
+                  return DropdownMenuItem<String>(
+                    value: intern["id"].toString(),
+                    child: Text(intern["name"]),
                   );
                 }).toList(),
-
                 onChanged: (value) {
                   setState(() {
-                    selectedModule = value!;
+                    selectedIntern = value;
                   });
                 },
               ),
@@ -109,7 +144,6 @@ class _MarkingPageState extends State<MarkingPage> {
 
             const SizedBox(height: 15),
 
-            // 🎯 MARKS
             const Text("Mark (/20)"),
             TextField(
               controller: _markController,
@@ -123,7 +157,6 @@ class _MarkingPageState extends State<MarkingPage> {
 
             const SizedBox(height: 15),
 
-            // 📝 FEEDBACK
             const Text("Feedback"),
             TextField(
               controller: _feedbackController,
@@ -137,7 +170,6 @@ class _MarkingPageState extends State<MarkingPage> {
 
             const SizedBox(height: 20),
 
-            // 🚀 BUTTON
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
@@ -145,9 +177,7 @@ class _MarkingPageState extends State<MarkingPage> {
                   backgroundColor: const Color(0xFF3B3B6D),
                   padding: const EdgeInsets.all(14),
                 ),
-
                 onPressed: updatePerformance,
-
                 child: const Text(
                   "Save Evaluation",
                   style: TextStyle(color: Colors.white),
@@ -157,7 +187,6 @@ class _MarkingPageState extends State<MarkingPage> {
 
             const SizedBox(height: 20),
 
-            // 📊 SHOW SAVED EVALUATIONS
             const Text(
               "Saved Evaluations",
               style: TextStyle(
@@ -175,17 +204,15 @@ class _MarkingPageState extends State<MarkingPage> {
                   return Container(
                     margin: const EdgeInsets.only(top: 10),
                     padding: const EdgeInsets.all(12),
-
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(12),
                     ),
-
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text("Module: ${item["module"]}"),
-                        Text("Mark: ${item["mark"]}"),
+                        Text("Intern: ${item["intern"]}"),
+                        Text("Mark: ${item["mark"]}/20"),
                         Text("Feedback: ${item["feedback"]}"),
                       ],
                     ),

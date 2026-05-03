@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:pro_link/services/user_service.dart';
 
 class UploadingPage extends StatefulWidget {
   const UploadingPage({super.key});
@@ -9,9 +10,10 @@ class UploadingPage extends StatefulWidget {
 }
 
 class _UploadingPageState extends State<UploadingPage> {
-
   final TextEditingController _titleController = TextEditingController();
+
   String? fileName;
+  String? filePath;
 
   Future<void> pickFile() async {
     FilePickerResult? result = await FilePicker.platform.pickFiles(
@@ -22,51 +24,60 @@ class _UploadingPageState extends State<UploadingPage> {
     if (result != null) {
       setState(() {
         fileName = result.files.single.name;
+        filePath = result.files.single.path;
       });
     }
   }
 
-  void uploadModule() {
-    if (_titleController.text.isEmpty || fileName == null) {
+  void uploadModule() async {
+    if (_titleController.text.isEmpty || filePath == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Please add title and file")),
       );
       return;
     }
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        backgroundColor: Color(0xFF3B3B6D),
-        content: Text(
-          "PDF uploaded successfully",
-          style: TextStyle(color: Colors.white),
-        ),
-      ),
+    final result = await UserService.uploadTraining(
+      _titleController.text,
+      filePath!,
     );
 
-    setState(() {
-      _titleController.clear();
-      fileName = null;
-    });
+    if (result["success"] == true) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          backgroundColor: Color(0xFF3B3B6D),
+          content: Text(
+            "Training file uploaded successfully",
+            style: TextStyle(color: Colors.white),
+          ),
+        ),
+      );
+
+      setState(() {
+        _titleController.clear();
+        fileName = null;
+        filePath = null;
+      });
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(result["message"])),
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF5F6FA),
-
       appBar: AppBar(
         title: const Text("Upload Training PDF"),
         backgroundColor: const Color(0xFF3B3B6D),
       ),
-
       body: Padding(
         padding: const EdgeInsets.all(16),
-
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-
             const Text(
               "Upload PDF Module",
               style: TextStyle(
@@ -93,23 +104,18 @@ class _UploadingPageState extends State<UploadingPage> {
 
             const SizedBox(height: 20),
 
-            // 📂 FILE PICKER BOX
             GestureDetector(
               onTap: pickFile,
-
               child: Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(18),
-
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(color: Colors.grey.shade300),
                 ),
-
                 child: Row(
                   children: [
-
                     const Icon(
                       Icons.upload_file,
                       color: Color(0xFF3B3B6D),
@@ -121,9 +127,7 @@ class _UploadingPageState extends State<UploadingPage> {
                       child: Text(
                         fileName ?? "Tap here to upload PDF",
                         style: TextStyle(
-                          color: fileName == null
-                              ? Colors.grey
-                              : Colors.black,
+                          color: fileName == null ? Colors.grey : Colors.black,
                         ),
                       ),
                     ),
@@ -134,10 +138,8 @@ class _UploadingPageState extends State<UploadingPage> {
 
             const SizedBox(height: 30),
 
-            // 🚀 UPLOAD BUTTON
             SizedBox(
               width: double.infinity,
-
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF3B3B6D),
@@ -146,9 +148,7 @@ class _UploadingPageState extends State<UploadingPage> {
                     borderRadius: BorderRadius.circular(12),
                   ),
                 ),
-
                 onPressed: uploadModule,
-
                 child: const Text(
                   "Upload",
                   style: TextStyle(color: Colors.white),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:pro_link/services/user_service.dart';
 
 class AssignInternPage extends StatefulWidget {
   const AssignInternPage({super.key});
@@ -13,17 +14,9 @@ class _AssignInternPageState extends State<AssignInternPage> {
   String? selectedMentor;
   String? selectedDepartment;
 
-  final List<String> interns = [
-    "Ahmed Benali",
-    "Sara Khelifa",
-    "Yacine Bouzid",
-  ];
-
-  final List<String> mentors = [
-    "Dr. Karim",
-    "Ms. Nadia",
-    "Mr. Samir",
-  ];
+  List<dynamic> interns = [];
+  List<dynamic> mentors = [];
+  bool isLoading = true;
 
   final List<String> departments = [
     "IT",
@@ -32,6 +25,32 @@ class _AssignInternPageState extends State<AssignInternPage> {
   ];
 
   List<Map<String, String>> assignments = [];
+  @override
+  void initState() {
+    super.initState();
+    loadData();
+  }
+
+  void loadData() async {
+    final internsData = await UserService.getApprovedInterns();
+    final mentorsData = await UserService.getApprovedMentors();
+    final assignmentsData = await UserService.getAssignments();
+
+    setState(() {
+      interns = internsData;
+      mentors = mentorsData;
+
+      assignments = assignmentsData.map<Map<String, String>>((item) {
+        return {
+          "intern": item["intern_name"].toString(),
+          "mentor": item["mentor_name"].toString(),
+          "department": item["department"].toString(),
+        };
+      }).toList();
+
+      isLoading = false;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -43,7 +62,9 @@ class _AssignInternPageState extends State<AssignInternPage> {
         backgroundColor: const Color(0xFF3B3B6D),
       ),
 
-      body: Padding(
+      body: isLoading
+        ? const Center(child: CircularProgressIndicator())
+        : Padding(
         padding: const EdgeInsets.all(16),
 
         child: Column(
@@ -61,7 +82,7 @@ class _AssignInternPageState extends State<AssignInternPage> {
 
             const SizedBox(height: 20),
 
-            _buildDropdown(
+            _buildUserDropdown(
               hint: "Select Intern",
               value: selectedIntern,
               items: interns,
@@ -72,7 +93,7 @@ class _AssignInternPageState extends State<AssignInternPage> {
 
             const SizedBox(height: 15),
 
-            _buildDropdown(
+            _buildUserDropdown(
               hint: "Select Mentor",
               value: selectedMentor,
               items: mentors,
@@ -172,6 +193,33 @@ class _AssignInternPageState extends State<AssignInternPage> {
     );
   }
 
+  Widget _buildUserDropdown({
+    required String hint,
+    required String? value,
+    required List<dynamic> items,
+    required Function(String?) onChanged,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: DropdownButton<String>(
+        value: value,
+        hint: Text(hint),
+        isExpanded: true,
+        underline: const SizedBox(),
+        items: items.map((user) {
+          return DropdownMenuItem<String>(
+            value: user["id"].toString(),
+            child: Text(user["name"]),
+          );
+        }).toList(),
+        onChanged: onChanged,
+      ),
+    );
+  }
   Widget _buildAssignmentCard(Map<String, String> item) {
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
@@ -203,23 +251,51 @@ class _AssignInternPageState extends State<AssignInternPage> {
   }
 
 
-  void assignIntern() {
+  void assignIntern() async {
     if (selectedIntern == null ||
         selectedMentor == null ||
         selectedDepartment == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Please select all fields")),
+      );
       return;
     }
 
-    assignments.add({
-      "intern": selectedIntern!,
-      "mentor": selectedMentor!,
-      "department": selectedDepartment!,
-    });
+    final result = await UserService.addAssignment(
+      selectedIntern!,
+      selectedMentor!,
+      selectedDepartment!,
+    );
 
-    setState(() {
-      selectedIntern = null;
-      selectedMentor = null;
-      selectedDepartment = null;
-    });
+    if (result["success"] == true) {
+      final internName = interns.firstWhere(
+            (user) => user["id"].toString() == selectedIntern,
+      )["name"];
+
+      final mentorName = mentors.firstWhere(
+            (user) => user["id"].toString() == selectedMentor,
+      )["name"];
+
+      setState(() {
+        assignments.add({
+          "intern": internName,
+          "mentor": mentorName,
+          "department": selectedDepartment!,
+        });
+
+        selectedIntern = null;
+        selectedMentor = null;
+        selectedDepartment = null;
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Assignment saved")),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(result["message"])),
+      );
+    }
   }
+
 }

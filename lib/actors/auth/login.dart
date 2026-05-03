@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../admin/admin.dart';
 import '../mentor/mentor.dart';
 import '../intern/intern.dart';
+import 'package:pro_link/services/user_service.dart';
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
 
@@ -16,7 +17,7 @@ class LoginPage extends StatefulWidget {
 
 
   //------------- login function------------
-  void loginUser() {
+  void loginUser() async {
     String email = emailController.text;
     String password = passwordController.text;
 
@@ -41,19 +42,23 @@ class LoginPage extends StatefulWidget {
       return;
     }
 
-    if (email == "admin@gmail.com" && password == "admin") {
-      showSuccessDialog("Admin");
-    }
-    else if (email == "mentor@gmail.com" && password == "mentor") {
-      showSuccessDialog("Teacher");
-    }
-    else if (email == "intern@gmail.com" && password == "intern") {
-      showSuccessDialog("Intern");
+    try {
+      final result = await UserService.login(email, password);
 
-    }
-    else {
+      if (result["success"] == true) {
+        String role = result["role"];
+        String userId = result["id"].toString();
+        UserService.currentUserId = userId;
+        print("LOGGED USER ID = ${UserService.currentUserId}");
+        showSuccessDialog(role);
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(result["message"])),
+        );
+      }
+    } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Invalid credentials")),
+        const SnackBar(content: Text("Server error")),
       );
     }
   }
@@ -203,34 +208,32 @@ class LoginPage extends StatefulWidget {
                         borderRadius: BorderRadius.circular(12),
                       ),
                     ),
-                    onPressed: () {
+                      onPressed: () {
+                        Navigator.pop(context);
 
-                      Navigator.pop(context); // close dialog
+                        final cleanRole = role.trim().toLowerCase();
 
-                      // 🔁 Routing based on role
-                      if (role == "Admin") {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const AdminPage(),
-                          ),
-                        );
-                      } else if (role == "Teacher") {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const MentorPage(),
-                          ),
-                        );
-                      } else if (role == "Intern") {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const InternPage(),
-                          ),
-                        );
-                      }
-                    },
+                        if (cleanRole == "admin") {
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(builder: (context) => const AdminPage()),
+                          );
+                        } else if (cleanRole == "mentor") {
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(builder: (context) => const MentorPage()),
+                          );
+                        } else if (cleanRole == "intern") {
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(builder: (context) => const InternPage()),
+                          );
+                        } else {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text("Unknown role: $role")),
+                          );
+                        }
+                      },
                     child: const Text(
                       "Continue",
                       style: TextStyle(color: Colors.white),
