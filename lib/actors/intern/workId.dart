@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:pro_link/services/user_service.dart';
 
 class WorkIdPage extends StatefulWidget {
   const WorkIdPage({super.key});
@@ -13,6 +14,7 @@ class _WorkIdPageState extends State<WorkIdPage> {
   String department = "";
   String id = "";
   String image = "";
+  bool loading = true;
 
   @override
   void initState() {
@@ -20,13 +22,35 @@ class _WorkIdPageState extends State<WorkIdPage> {
     loadInternInfo();
   }
 
-  void loadInternInfo() {
-    setState(() {
-      name = "John Doe";
-      department = "Software Engineering";
-      id = "INT-2026-001";
-      image = "assets/profile.png";
-    });
+  void loadInternInfo() async {
+    try {
+      final user = await UserService.getUserById(UserService.currentUserId);
+      final assignments = await UserService.getAssignments();
+
+      String dept = "Not assigned";
+
+      // 🔍 find this user's assignment
+      for (var a in assignments) {
+        if (a["intern_id"].toString() == UserService.currentUserId) {
+          dept = a["department"];
+          break;
+        }
+      }
+
+      setState(() {
+        name = user["name"];
+        id = user["id"].toString();
+        image = user["image"] ?? "";
+        department = dept;
+        loading = false;
+      });
+
+    } catch (e) {
+      print("ERROR: $e");
+      setState(() {
+        loading = false;
+      });
+    }
   }
 
   @override
@@ -40,7 +64,9 @@ class _WorkIdPageState extends State<WorkIdPage> {
       ),
 
       body: Center(
-        child: _buildIdCard(),
+        child: loading
+            ? const CircularProgressIndicator(color: Colors.white)
+            : _buildIdCard(),
       ),
     );
   }
@@ -69,7 +95,9 @@ class _WorkIdPageState extends State<WorkIdPage> {
 
           CircleAvatar(
             radius: 45,
-            backgroundImage: AssetImage(image),
+            backgroundImage: image.isNotEmpty
+                ? NetworkImage("http://localhost/flutter_api/$image")
+                : const AssetImage("assets/profile.png") as ImageProvider,
           ),
 
           const SizedBox(height: 12),

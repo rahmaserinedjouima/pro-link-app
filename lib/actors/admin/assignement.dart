@@ -30,9 +30,10 @@ class _AssignInternPageState extends State<AssignInternPage> {
     super.initState();
     loadData();
   }
-
+  //-------------loading data------
   void loadData() async {
     final internsData = await UserService.getApprovedInterns();
+    print("INTERN DATA FROM API: $internsData");
     final mentorsData = await UserService.getApprovedMentors();
     final assignmentsData = await UserService.getAssignments();
 

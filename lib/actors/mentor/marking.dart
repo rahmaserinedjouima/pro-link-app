@@ -38,11 +38,36 @@ class _MarkingPageState extends State<MarkingPage> {
     });
   }
 
-  void loadInterns() async {
+ /*void loadInterns() async {
     final data = await UserService.getAssignedInterns();
 
     setState(() {
       interns = data;
+      isLoading = false;
+    });
+  }*/
+  // ---- keep assigned interns to theat teacher only if theyre approved
+  void loadInterns() async {
+    final assigned = await UserService.getAssignedInterns();
+    final approved = await UserService.getApprovedInterns();
+
+    List filtered = [];
+    print("🔵 ASSIGNED:");
+    print(assigned);
+
+    print("🟢 APPROVED:");
+    print(approved);
+    for (var a in assigned) {
+      for (var p in approved) {
+        if (a["id"].toString() == p["id"].toString()) {
+          filtered.add(a);
+          break;
+        }
+      }
+    }
+
+    setState(() {
+      interns = filtered;
       isLoading = false;
     });
   }

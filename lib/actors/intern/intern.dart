@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:pro_link/actors/intern/schedule.dart';
 import 'package:pro_link/actors/intern/trainingFiles.dart';
 import 'package:pro_link/actors/intern/workId.dart';
-
 import '../../welcome/welcome.dart';
 import 'marks.dart';
 import 'package:pro_link/actors/intern/internAttendance.dart';

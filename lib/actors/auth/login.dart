@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:pro_link/actors/auth/signup.dart';
 import '../admin/admin.dart';
 import '../mentor/mentor.dart';
 import '../intern/intern.dart';
@@ -49,6 +50,7 @@ class LoginPage extends StatefulWidget {
         String role = result["role"];
         String userId = result["id"].toString();
         UserService.currentUserId = userId;
+
         print("LOGGED USER ID = ${UserService.currentUserId}");
         showSuccessDialog(role);
       } else {
@@ -158,6 +160,35 @@ class LoginPage extends StatefulWidget {
                 "professor,student or admin? enter your credentials",
                 textAlign: TextAlign.center,
                 style: TextStyle(fontSize: 12, color: Colors.grey),
+              ),
+            ),
+            const SizedBox(height: 15),
+
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton(
+                style: OutlinedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  side: const BorderSide(color: Color(0xFF3B3B6D)),
+                ),
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const SignupPage(),
+                    ),
+                  );
+                },
+                child: const Text(
+                  "Sign Up",
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Color(0xFF3B3B6D),
+                  ),
+                ),
               ),
             ),
           ],
