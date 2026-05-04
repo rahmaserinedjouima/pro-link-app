@@ -18,6 +18,7 @@ class _SchedulePageState extends State<SchedulePage> {
     super.initState();
     loadSchedules();
   }
+
   void openPdf(String filePath) async {
     final url = Uri.parse("http://localhost/flutter_api/$filePath");
 
@@ -29,7 +30,7 @@ class _SchedulePageState extends State<SchedulePage> {
 
   void loadSchedules() async {
     final data = await UserService.getSchedules();
-    print(data);
+
     setState(() {
       schedules = data;
       isLoading = false;
@@ -48,48 +49,59 @@ class _SchedulePageState extends State<SchedulePage> {
 
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
-          : Padding(
-        padding: const EdgeInsets.all(16),
+          : LayoutBuilder(
+        builder: (context, constraints) {
+          double screenWidth = constraints.maxWidth;
+          double containerWidth = screenWidth > 700 ? 700 : screenWidth;
 
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              "Uploaded Schedules",
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF3B3B6D),
-              ),
-            ),
-
-            const SizedBox(height: 15),
-
-            Expanded(
-              child: schedules.isEmpty
-                  ? const Center(
-                child: Text("No schedules uploaded yet"),
-              )
-                  : ListView.builder(
-                itemCount: schedules.length,
-                itemBuilder: (context, index) {
-                  final item = schedules[index];
-
-                  return GestureDetector(
-                    onTap: () {
-                      openPdf(item["file_path"]);
-                    },
-                    child: _buildScheduleCard(
-                      title: item["title"],
-                      fileName: item["file_name"],
-                      filePath: item["file_path"],
+          return Center(
+            child: SizedBox(
+              width: containerWidth,
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      "Uploaded Schedules",
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF3B3B6D),
+                      ),
                     ),
-                  );
-                },
+
+                    const SizedBox(height: 15),
+
+                    Expanded(
+                      child: schedules.isEmpty
+                          ? const Center(
+                        child: Text("No schedules uploaded yet"),
+                      )
+                          : ListView.builder(
+                        itemCount: schedules.length,
+                        itemBuilder: (context, index) {
+                          final item = schedules[index];
+
+                          return GestureDetector(
+                            onTap: () {
+                              openPdf(item["file_path"]);
+                            },
+                            child: _buildScheduleCard(
+                              title: item["title"],
+                              fileName: item["file_name"],
+                              filePath: item["file_path"],
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
-          ],
-        ),
+          );
+        },
       ),
     );
   }

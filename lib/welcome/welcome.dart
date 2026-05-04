@@ -10,6 +10,7 @@ class WelcomePage extends StatefulWidget {
 
 class _WelcomePageState extends State<WelcomePage>
     with SingleTickerProviderStateMixin {
+
   late AnimationController _controller;
   late Animation<double> _animation;
 
@@ -27,7 +28,7 @@ class _WelcomePageState extends State<WelcomePage>
       curve: Curves.easeOutBack,
     );
 
-    _controller.forward(); // start animation
+    _controller.forward();
   }
 
   @override
@@ -38,58 +39,78 @@ class _WelcomePageState extends State<WelcomePage>
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
 
     return Scaffold(
       backgroundColor: Colors.white,
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
 
-            // 🔥 Animated Logo
-            ScaleTransition(
-              scale: _animation,
-              child: FadeTransition(
-                opacity: _animation,
-                child: Image.asset(
-                  'assets/wlc.png',
-                  width: 450,
-                ),
-              ),
-            ),
+      body: LayoutBuilder(
+        builder: (context, constraints) {
 
+          double screenWidth = constraints.maxWidth;
 
-            const SizedBox(height: 20),
+          // 👇 responsive logo size
+          double logoSize = screenWidth > 800
+              ? 400
+              : screenWidth > 500
+              ? 300
+              : 200;
 
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF3B3B6D),
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 50,
-                  vertical: 16,
-                ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(30),
-                ),
-                elevation: 2,
-              ),
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const LoginPage(),
+          return Center(
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+
+                  // 🔥 Animated Logo
+                  ScaleTransition(
+                    scale: _animation,
+                    child: FadeTransition(
+                      opacity: _animation,
+                      child: Image.asset(
+                        'assets/wlc.png',
+                        width: logoSize,
+                      ),
+                    ),
                   ),
-                );
-              },
-              child: const Text(
-                "Get Started",
-                style: TextStyle(fontSize: 16),
+
+                  const SizedBox(height: 30),
+
+                  // 🚀 Button
+                  SizedBox(
+                    width: screenWidth > 400 ? 250 : screenWidth * 0.7,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF3B3B6D),
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(
+                          vertical: 16,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(30),
+                        ),
+                        elevation: 2,
+                      ),
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const LoginPage(),
+                          ),
+                        );
+                      },
+                      child: const Text(
+                        "Get Started",
+                        style: TextStyle(fontSize: 16),
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 20),
+                ],
               ),
             ),
-          ],
-        ),
+          );
+        },
       ),
     );
   }

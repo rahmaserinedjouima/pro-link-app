@@ -11,16 +11,16 @@ class ManageInternsPage extends StatefulWidget {
 class _ManageInternsPageState extends State<ManageInternsPage> {
 
   List<Map<String, dynamic>> interns = [];
-  List<dynamic> searchResults = [];
   List<dynamic> suggestions = [];
   List<Map<String, dynamic>> filteredInterns = [];
   bool isLoading = true;
+
   @override
   void initState() {
     super.initState();
     loadInterns();
   }
-  //---------------search interns------------------
+
   void searchInterns(String query) async {
     if (query.isEmpty) {
       setState(() {
@@ -32,7 +32,6 @@ class _ManageInternsPageState extends State<ManageInternsPage> {
 
     try {
       final results = await UserService.searchInterns(query);
-
       final list = List<Map<String, dynamic>>.from(results);
 
       setState(() {
@@ -44,18 +43,17 @@ class _ManageInternsPageState extends State<ManageInternsPage> {
         filteredInterns = interns;
         suggestions = [];
       });
-
-      print("Search error: $e");
     }
   }
+
   void loadInterns() async {
     final data = await UserService.getInterns();
 
     if (!mounted) return;
 
     setState(() {
-      filteredInterns = interns;
       interns = List<Map<String, dynamic>>.from(data);
+      filteredInterns = interns;
       isLoading = false;
     });
   }
@@ -70,93 +68,85 @@ class _ManageInternsPageState extends State<ManageInternsPage> {
         backgroundColor: const Color(0xFF3B3B6D),
       ),
 
- /*     body: isLoading
+      body: isLoading
           ? const Center(child: CircularProgressIndicator())
-          : Padding(
-        padding: const EdgeInsets.all(16),
+          : LayoutBuilder(
+        builder: (context, constraints) {
+          double screenWidth = constraints.maxWidth;
+          double containerWidth = screenWidth > 700 ? 700 : screenWidth;
 
-        child: ListView.builder(
-          itemCount: interns.length,
-          itemBuilder: (context, index) {
-            return _buildInternCard(index, interns[index]);
-          },
-        ),
-      ),
-    );*/
-        body: isLoading
-            ? const Center(child: CircularProgressIndicator())
-            : Padding(
-          padding: const EdgeInsets.all(16),
+          return Center(
+            child: SizedBox(
+              width: containerWidth,
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  children: [
 
-          child: Column(
-            children: [
+                    // 🔍 SEARCH BAR
+                    TextField(
+                      decoration: InputDecoration(
+                        hintText: "Search interns...",
+                        prefixIcon: const Icon(Icons.search),
+                        filled: true,
+                        fillColor: Colors.white,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide.none,
+                        ),
+                      ),
+                      onChanged: (value) {
+                        searchInterns(value);
+                      },
+                    ),
 
-              // 🔍 SEARCH BAR
-              TextField(
-                decoration: InputDecoration(
-                  hintText: "Search interns...",
-                  prefixIcon: const Icon(Icons.search),
-                  filled: true,
-                  fillColor: Colors.white,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide.none,
-                  ),
-                ),
-                onChanged: (value) {
-                  searchInterns(value);
-                },
-              ),
+                    const SizedBox(height: 10),
 
-              const SizedBox(height: 10),
+                    // 🔎 Suggestions
+                    if (suggestions.isNotEmpty)
+                      Container(
+                        color: Colors.white,
+                        child: ListView.builder(
+                          shrinkWrap: true,
+                          itemCount: suggestions.length,
+                          itemBuilder: (context, index) {
+                            final item = suggestions[index];
 
-              if (suggestions.isNotEmpty)
-                Container(
-                  color: Colors.white,
-                  child: ListView.builder(
-                    shrinkWrap: true,
-                    itemCount: suggestions.length,
-                    itemBuilder: (context, index) {
-                      final item = suggestions[index];
+                            return ListTile(
+                              title: Text(item["name"] ?? ""),
+                              subtitle: Text(item["status"] ?? ""),
+                              onTap: () {
+                                setState(() {
+                                  filteredInterns = [item];
+                                  suggestions = [];
+                                });
+                              },
+                            );
+                          },
+                        ),
+                      ),
 
-                      return ListTile(
-                        title: Text(item["name"] ?? ""),
-                        subtitle: Text(item["status"] ?? ""),
-                        onTap: () {
-                          setState(() {
-                            filteredInterns = [item];
-                            suggestions = [];
-                          });
+                    const SizedBox(height: 10),
+
+                    // 📋 LIST
+                    Expanded(
+                      child: ListView.builder(
+                        itemCount: filteredInterns.length,
+                        itemBuilder: (context, index) {
+                          final intern = filteredInterns[index];
+                          return _buildInternCard(index, intern);
                         },
-                      );
-                    },
-                  ),
-                ),
-
-              const SizedBox(height: 10),
-
-              // 📋 LIST
-              Expanded(
-                child: ListView.builder(
-                  itemCount: filteredInterns.isEmpty
-                      ? interns.length
-                      : filteredInterns.length,
-
-                  itemBuilder: (context, index) {
-                    final intern = filteredInterns.isEmpty
-                        ? interns[index]
-                        : filteredInterns[index];
-
-                    return _buildInternCard(index, intern);
-                  },
+                      ),
+                    ),
+                  ],
                 ),
               ),
-            ],
-          ),
-        ))
-    ;
+            ),
+          );
+        },
+      ),
+    );
   }
-
 
   Widget _buildInternCard(int index, Map<String, dynamic> intern) {
     return Container(
@@ -166,7 +156,6 @@ class _ManageInternsPageState extends State<ManageInternsPage> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
-
         boxShadow: const [
           BoxShadow(
             color: Colors.black12,
@@ -184,7 +173,7 @@ class _ManageInternsPageState extends State<ManageInternsPage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                intern["name"]!,
+                intern["name"],
                 style: const TextStyle(
                   fontWeight: FontWeight.bold,
                   color: Color(0xFF3B3B6D),
@@ -211,21 +200,8 @@ class _ManageInternsPageState extends State<ManageInternsPage> {
                   if (result["success"] == true) {
                     setState(() {
                       interns[index]["status"] = "approved";
-
-                      for (var i in filteredInterns) {
-                        if (i["id"] == intern["id"]) {
-                          i["status"] = "approved";
-                        }
-                      }
+                      filteredInterns[index]["status"] = "approved";
                     });
-
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text("Intern approved")),
-                    );
-                  } else {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text(result["message"])),
-                    );
                   }
                 },
               ),
@@ -241,20 +217,8 @@ class _ManageInternsPageState extends State<ManageInternsPage> {
                   if (result["success"] == true) {
                     setState(() {
                       interns[index]["status"] = "rejected";
-                      for (var i in filteredInterns) {
-                        if (i["id"] == intern["id"]) {
-                          i["status"] = "rejected";
-                        }
-                      }
+                      filteredInterns[index]["status"] = "rejected";
                     });
-
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text("Intern rejected")),
-                    );
-                  } else {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text(result["message"])),
-                    );
                   }
                 },
               ),

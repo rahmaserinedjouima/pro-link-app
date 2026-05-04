@@ -10,6 +10,7 @@ class TrainingFilesPage extends StatefulWidget {
 }
 
 class _TrainingFilesPageState extends State<TrainingFilesPage> {
+
   List<dynamic> files = [];
   List<dynamic> filteredFiles = [];
   List<dynamic> suggestions = [];
@@ -30,7 +31,7 @@ class _TrainingFilesPageState extends State<TrainingFilesPage> {
       isLoading = false;
     });
   }
-  //------------search files function
+
   void searchFiles(String query) async {
     if (query.isEmpty) {
       setState(() {
@@ -44,9 +45,10 @@ class _TrainingFilesPageState extends State<TrainingFilesPage> {
 
     setState(() {
       filteredFiles = results;
-      suggestions = results.take(5).toList(); // simple suggestions
+      suggestions = results.take(5).toList();
     });
   }
+
   void openFile(String filePath) async {
     final url = Uri.parse("http://localhost/flutter_api/$filePath");
 
@@ -60,89 +62,111 @@ class _TrainingFilesPageState extends State<TrainingFilesPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF5F6FA),
+
       appBar: AppBar(
         title: const Text("Training Files"),
         backgroundColor: const Color(0xFF3B3B6D),
       ),
+
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
-          : Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            TextField(
-              decoration: InputDecoration(
-                hintText: "Search training files...",
-                prefixIcon: const Icon(Icons.search),
-                filled: true,
-                fillColor: Colors.white,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide.none,
-                ),
-              ),
-              onChanged: (value) {
-               searchFiles(value);
-              },
-            ),
-            const SizedBox(height:10),
-            //---------suggestions -----------
-            if (suggestions.isNotEmpty)
-              Container(
-                color: Colors.white,
-                child: ListView.builder(
-                  shrinkWrap: true,
-                  itemCount: suggestions.length,
-                  itemBuilder: (context, index) {
-                    final item = suggestions[index];
+          : LayoutBuilder(
+        builder: (context, constraints) {
 
-                    return ListTile(
-                      leading: const Icon(Icons.search),
-                      title: Text(item["title"] ?? ""),
-                      onTap: () {
-                        openFile(item["file_path"]);
+          double screenWidth = constraints.maxWidth;
+          double containerWidth = screenWidth > 700 ? 700 : screenWidth;
 
-                        setState(() {
-                          suggestions = [];
-                        });
+          return Center(
+            child: SizedBox(
+              width: containerWidth,
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+
+                    // 🔍 SEARCH
+                    TextField(
+                      decoration: InputDecoration(
+                        hintText: "Search training files...",
+                        prefixIcon: const Icon(Icons.search),
+                        filled: true,
+                        fillColor: Colors.white,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide.none,
+                        ),
+                      ),
+                      onChanged: (value) {
+                        searchFiles(value);
                       },
-                    );
-                  },
+                    ),
+
+                    const SizedBox(height: 10),
+
+                    // 🔎 Suggestions
+                    if (suggestions.isNotEmpty)
+                      Container(
+                        color: Colors.white,
+                        child: ListView.builder(
+                          shrinkWrap: true,
+                          itemCount: suggestions.length,
+                          itemBuilder: (context, index) {
+                            final item = suggestions[index];
+
+                            return ListTile(
+                              leading: const Icon(Icons.search),
+                              title: Text(item["title"] ?? ""),
+                              onTap: () {
+                                openFile(item["file_path"]);
+
+                                setState(() {
+                                  suggestions = [];
+                                });
+                              },
+                            );
+                          },
+                        ),
+                      ),
+
+                    const SizedBox(height: 15),
+
+                    const Text(
+                      "Available Learning Resources",
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF3B3B6D),
+                      ),
+                    ),
+
+                    const SizedBox(height: 15),
+
+                    // 📋 FILE LIST
+                    Expanded(
+                      child: filteredFiles.isEmpty
+                          ? const Center(child: Text("No training files yet"))
+                          : ListView.builder(
+                        itemCount: filteredFiles.length,
+                        itemBuilder: (context, index) {
+
+                          final item = filteredFiles[index];
+
+                          return _buildFileCard(
+                            title: item["title"],
+                            fileName: item["file_name"],
+                            filePath: item["file_path"],
+                          );
+                        },
+                      ),
+                    ),
+                  ],
                 ),
               ),
-            const SizedBox(height: 15),
-            const Text(
-              "Available Learning Resources",
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF3B3B6D),
-              ),
             ),
-
-            const SizedBox(height: 15),
-
-            Expanded(
-              child: filteredFiles.isEmpty
-                  ? const Center(child: Text("No training files yet"))
-                  : ListView.builder(
-                itemCount: filteredFiles.length,
-               // itemCount: files.length,
-                itemBuilder: (context, index) {
-                  final item = filteredFiles[index];
-                //  final item = files[index];
-
-                  return _buildFileCard(
-                    title: item["title"],
-                    fileName: item["file_name"],
-                    filePath: item["file_path"],
-                  );
-                },
-              ),
-            ),
-          ],
-        ),
+          );
+        },
       ),
     );
   }
@@ -155,6 +179,7 @@ class _TrainingFilesPageState extends State<TrainingFilesPage> {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(15),
+
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(15),
@@ -166,11 +191,13 @@ class _TrainingFilesPageState extends State<TrainingFilesPage> {
           ),
         ],
       ),
+
       child: ListTile(
         leading: const Icon(
           Icons.picture_as_pdf,
           color: Color(0xFF3B3B6D),
         ),
+
         title: Text(
           title,
           style: const TextStyle(
@@ -178,8 +205,11 @@ class _TrainingFilesPageState extends State<TrainingFilesPage> {
             color: Color(0xFF3B3B6D),
           ),
         ),
+
         subtitle: Text(fileName),
+
         trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+
         onTap: () {
           openFile(filePath);
         },

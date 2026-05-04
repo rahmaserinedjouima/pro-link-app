@@ -38,67 +38,73 @@ class MentorPage extends StatelessWidget {
         ],
       ),
 
-      body: Padding(
-        padding: const EdgeInsets.all(16),
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          double screenWidth = constraints.maxWidth;
 
-        child: GridView.count(
-          crossAxisCount: 2,
-          crossAxisSpacing: 10,
-          mainAxisSpacing: 10,
-          childAspectRatio: 0.85,
+          int columns = 1;
 
-          children: [
+          if (screenWidth > 900) {
+            columns = 4;
+          } else if (screenWidth > 600) {
+            columns = 3;
+          } else if (screenWidth > 400) {
+            columns = 2;
+          }
 
-            _buildCard(
-              title: "Evaluate Interns",
-              image: "assets/evaluate.png",
-              description: "Assign marks & feedback",
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const MarkingPage()),
-                );
-              },
+          return Padding(
+            padding: const EdgeInsets.all(16),
+            child: GridView.count(
+              crossAxisCount: columns,
+              crossAxisSpacing: 10,
+              mainAxisSpacing: 10,
+              childAspectRatio: screenWidth > 600 ? 1.1 : 0.85,
+
+              children: [
+
+                _buildCard(
+                  title: "Evaluate Interns",
+                  image: "assets/evaluate.png",
+                  description: "Assign marks & feedback",
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const MarkingPage()),
+                    );
+                  },
+                ),
+
+                _buildCard(
+                  title: "Training Upload",
+                  image: "assets/training.png",
+                  description: "Upload resources & modules",
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const UploadingPage()),
+                    );
+                  },
+                ),
+
+                _buildCard(
+                  title: "Attendance",
+                  image: "assets/attendance.png",
+                  description: "Track weekly presence",
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const AttendancePage()),
+                    );
+                  },
+                ),
+              ],
             ),
-
-            _buildCard(
-              title: "Training Upload",
-              image: "assets/training.png",
-              description: "Upload resources & modules",
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const  UploadingPage()),
-                );
-              },
-            ),
-
-            _buildCard(
-              title: "Attendance",
-              image: "assets/attendance.png",
-              description: "Track weekly presence",
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const  AttendancePage()),
-                );
-
-              },
-            ),
-
-           /* _buildCard(
-              title: "My Groups",
-              image: "assets/groups.png",
-              description: "View assigned interns",
-              onTap: () {},
-            ),*/
-          ],
-        ),
+          );
+        },
       ),
     );
   }
 
-  // 🧩 CARD DESIGN
   Widget _buildCard({
     required String title,
     required String image,

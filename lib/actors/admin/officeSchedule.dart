@@ -66,94 +66,112 @@ class _UploadSchedulePageState extends State<UploadSchedulePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF5F6FA),
+
       appBar: AppBar(
         title: const Text("Upload Office Schedule"),
         backgroundColor: const Color(0xFF3B3B6D),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              "Upload Schedule / Policy",
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF3B3B6D),
-              ),
-            ),
 
-            const SizedBox(height: 20),
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          double screenWidth = constraints.maxWidth;
+          double containerWidth = screenWidth > 700 ? 700 : screenWidth;
 
-            TextField(
-              controller: _titleController,
-              decoration: InputDecoration(
-                hintText: "Enter title (e.g. Weekly Schedule)",
-                filled: true,
-                fillColor: Colors.white,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide.none,
-                ),
-              ),
-            ),
-
-            const SizedBox(height: 20),
-
-            GestureDetector(
-              onTap: pickFile,
-              child: Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(18),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.grey.shade300),
-                ),
-                child: Row(
-                  children: [
-                    const Icon(
-                      Icons.upload_file,
-                      color: Color(0xFF3B3B6D),
-                    ),
-
-                    const SizedBox(width: 10),
-
-                    Expanded(
-                      child: Text(
-                        fileName ?? "Tap here to upload PDF",
+          return Center(
+            child: SingleChildScrollView(
+              child: SizedBox(
+                width: containerWidth,
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        "Upload Schedule / Policy",
                         style: TextStyle(
-                          color: fileName == null ? Colors.grey : Colors.black,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF3B3B6D),
                         ),
                       ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
 
-            const SizedBox(height: 30),
+                      const SizedBox(height: 20),
 
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF3B3B6D),
-                  padding: const EdgeInsets.all(14),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+                      TextField(
+                        controller: _titleController,
+                        decoration: InputDecoration(
+                          hintText: "Enter title (e.g. Weekly Schedule)",
+                          filled: true,
+                          fillColor: Colors.white,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide.none,
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(height: 20),
+
+                      GestureDetector(
+                        onTap: pickFile,
+                        child: Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.all(18),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: Colors.grey.shade300),
+                          ),
+                          child: Row(
+                            children: [
+                              const Icon(
+                                Icons.upload_file,
+                                color: Color(0xFF3B3B6D),
+                              ),
+
+                              const SizedBox(width: 10),
+
+                              Expanded(
+                                child: Text(
+                                  fileName ?? "Tap here to upload PDF",
+                                  style: TextStyle(
+                                    color: fileName == null
+                                        ? Colors.grey
+                                        : Colors.black,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(height: 30),
+
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF3B3B6D),
+                            padding: const EdgeInsets.all(14),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          onPressed: uploadSchedule,
+                          child: const Text(
+                            "Upload",
+                            style: TextStyle(color: Colors.white),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-                onPressed: uploadSchedule,
-                child: const Text(
-                  "Upload",
-                  style: TextStyle(color: Colors.white),
-                ),
               ),
             ),
-          ],
-        ),
+          );
+        },
       ),
     );
   }

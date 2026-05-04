@@ -23,7 +23,7 @@ class InternPage extends StatelessWidget {
             Navigator.pushAndRemoveUntil(
               context,
               MaterialPageRoute(builder: (context) => const WelcomePage()),
-                  (route) => false, // 🔥 removes all previous pages
+                  (route) => false,
             );
           },
         ),
@@ -39,96 +39,109 @@ class InternPage extends StatelessWidget {
         ],
       ),
 
-      body: Padding(
-        padding: const EdgeInsets.all(16),
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          double screenWidth = constraints.maxWidth;
 
-        child: GridView.count(
-          crossAxisCount: 2,
-          crossAxisSpacing: 50,
-          mainAxisSpacing: 50,
-          childAspectRatio: 0.85,
+          int columns = 1;
 
-          children: [
+          if (screenWidth > 900) {
+            columns = 4;
+          } else if (screenWidth > 600) {
+            columns = 3;
+          } else if (screenWidth > 400) {
+            columns = 2;
+          }
 
-            _buildCard(
-              title: "Work ID",
-              image: "assets/id.png",
-              icon: Icons.badge,
-              description: "Your digital identity card",
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const WorkIdPage()),
-                );
-              },
+          return Padding(
+            padding: const EdgeInsets.all(16),
+            child: GridView.count(
+              crossAxisCount: columns,
+              crossAxisSpacing: 20,
+              mainAxisSpacing: 20,
+              childAspectRatio: screenWidth > 600 ? 1.1 : 0.85,
+
+              children: [
+
+                _buildCard(
+                  title: "Work ID",
+                  image: "assets/id.png",
+                  icon: Icons.badge,
+                  description: "Your digital identity card",
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const WorkIdPage()),
+                    );
+                  },
+                ),
+
+                _buildCard(
+                  title: "Schedule",
+                  image: "assets/schedule.png",
+                  icon: Icons.schedule,
+                  description: "Weekly internship timetable",
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const SchedulePage()),
+                    );
+                  },
+                ),
+
+                _buildCard(
+                  title: "Marks",
+                  image: "assets/marks.png",
+                  icon: Icons.bar_chart,
+                  description: "Performance evaluation",
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const MarksPage()),
+                    );
+                  },
+                ),
+
+                _buildCard(
+                  title: "Attendance",
+                  image: "assets/attendance.png",
+                  icon: Icons.check_circle,
+                  description: "View your attendance",
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const InternAttendancePage()),
+                    );
+                  },
+                ),
+
+                _buildCard(
+                  title: "Training",
+                  image: "assets/training.png",
+                  icon: Icons.folder,
+                  description: "Learning resources",
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const TrainingFilesPage()),
+                    );
+                  },
+                ),
+              ],
             ),
-
-            _buildCard(
-              title: "Schedule",
-              image: "assets/schedule.png",
-              description: "Weekly internship timetable",
-              icon: Icons.schedule,
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const SchedulePage()),
-                );
-              },
-            ),
-
-            _buildCard(
-              title: "Marks",
-              image: "assets/marks.png",
-              description: "Performance evaluation",
-              icon: Icons.bar_chart,
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const MarksPage()),
-                );
-              },
-            ),
-            _buildCard(
-              title: "Attendance",
-              image: "assets/attendance.png",
-              icon: Icons.check_circle,
-              description: "View your attendance",
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const InternAttendancePage()),
-                );
-              },
-            ),
-
-            _buildCard(
-              title: "Training",
-              image: "assets/training.png",
-              icon: Icons.folder,
-              description: "Learning resources",
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const TrainingFilesPage()),
-                );
-              },
-            ),
-          ],
-        ),
+          );
+        },
       ),
     );
   }
 
-  Widget _buildCard(
-      {
+  Widget _buildCard({
     required String title,
     required String image,
     required IconData icon,
     required String description,
     required VoidCallback onTap,
-  }
-  )
-  {
+  }) {
     return GestureDetector(
       onTap: onTap,
 
@@ -136,8 +149,6 @@ class InternPage extends StatelessWidget {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(15),
-
-          // 💡 shadow for modern look
           boxShadow: const [
             BoxShadow(
               color: Colors.black12,
@@ -167,6 +178,7 @@ class InternPage extends StatelessWidget {
                 color: Color(0xFF3B3B6D),
               ),
             ),
+
             Text(
               description,
               textAlign: TextAlign.center,

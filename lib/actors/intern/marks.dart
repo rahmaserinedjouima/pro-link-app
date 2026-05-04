@@ -9,6 +9,7 @@ class MarksPage extends StatefulWidget {
 }
 
 class _MarksPageState extends State<MarksPage> {
+
   List<dynamic> marks = [];
   bool isLoading = true;
 
@@ -37,47 +38,67 @@ class _MarksPageState extends State<MarksPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF5F6FA),
+
       appBar: AppBar(
         title: const Text("Performance Evaluation"),
         backgroundColor: const Color(0xFF3B3B6D),
       ),
+
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
-          : Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              "Your Evaluation",
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF3B3B6D),
-              ),
-            ),
-            const SizedBox(height: 15),
-            Expanded(
-              child: marks.isEmpty
-                  ? const Center(child: Text("No marks yet"))
-                  : ListView.builder(
-                itemCount: marks.length,
-                itemBuilder: (context, index) {
-                  final item = marks[index];
-                  final mark = int.parse(item["mark"].toString());
+          : LayoutBuilder(
+        builder: (context, constraints) {
 
-                  return _buildMarkCard(
-                    intern: item["intern_name"],
-                    mentor: item["mentor_name"],
-                    mark: mark,
-                    feedback: item["feedback"],
-                    color: getMarkColor(mark),
-                  );
-                },
+          double screenWidth = constraints.maxWidth;
+          double containerWidth = screenWidth > 700 ? 700 : screenWidth;
+
+          return Center(
+            child: SizedBox(
+              width: containerWidth,
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+
+                    const Text(
+                      "Your Evaluation",
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF3B3B6D),
+                      ),
+                    ),
+
+                    const SizedBox(height: 15),
+
+                    Expanded(
+                      child: marks.isEmpty
+                          ? const Center(child: Text("No marks yet"))
+                          : ListView.builder(
+                        itemCount: marks.length,
+                        itemBuilder: (context, index) {
+
+                          final item = marks[index];
+                          final mark = int.parse(item["mark"].toString());
+
+                          return _buildMarkCard(
+                            intern: item["intern_name"],
+                            mentor: item["mentor_name"],
+                            mark: mark,
+                            feedback: item["feedback"],
+                            color: getMarkColor(mark),
+                          );
+                        },
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
-          ],
-        ),
+          );
+        },
       ),
     );
   }
@@ -92,6 +113,7 @@ class _MarksPageState extends State<MarksPage> {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(15),
+
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(15),
@@ -103,9 +125,11 @@ class _MarksPageState extends State<MarksPage> {
           ),
         ],
       ),
+
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+
           Text(
             "Intern: $intern",
             style: const TextStyle(
@@ -114,15 +138,20 @@ class _MarksPageState extends State<MarksPage> {
               color: Color(0xFF3B3B6D),
             ),
           ),
+
           const SizedBox(height: 6),
+
           Text(
             "Mentor: $mentor",
             style: const TextStyle(fontSize: 12, color: Colors.grey),
           ),
+
           const SizedBox(height: 10),
+
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
+
               const Text(
                 "Mark",
                 style: TextStyle(
@@ -130,9 +159,9 @@ class _MarksPageState extends State<MarksPage> {
                   color: Color(0xFF3B3B6D),
                 ),
               ),
+
               Container(
-                padding:
-                const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
                   color: color,
                   borderRadius: BorderRadius.circular(20),
@@ -147,7 +176,9 @@ class _MarksPageState extends State<MarksPage> {
               ),
             ],
           ),
+
           const SizedBox(height: 10),
+
           Text(
             feedback,
             style: const TextStyle(fontSize: 12, color: Colors.black87),

@@ -27,7 +27,7 @@ class MyApp extends StatelessWidget {
       ),
 
      // home: const AdminPage(),
-    home: const MentorPage(),
+    home: const WelcomePage(),
      // home: const InternPage(),
     );
   }

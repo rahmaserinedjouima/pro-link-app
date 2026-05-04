@@ -38,66 +38,69 @@ class AdminPage extends StatelessWidget {
         ],
       ),
 
-      body: Padding(
-        padding: const EdgeInsets.all(16),
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          double screenWidth = constraints.maxWidth;
 
-        child: GridView.count(
-          crossAxisCount: 2,
-          crossAxisSpacing: 10,
-          mainAxisSpacing: 10,
-          childAspectRatio: 0.85,
+          int columns = 1;
 
-          children: [
+          if (screenWidth > 900) {
+            columns = 4;
+          } else if (screenWidth > 600) {
+            columns = 3;
+          } else if (screenWidth > 400) {
+            columns = 2;
+          }
 
-            _buildCard(
-              title: "Manage Interns",
-              image: "assets/interns.png",
-              description: "approve ,reject interns",
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const  ManageInternsPage()),
-                );
+          return Padding(
+            padding: const EdgeInsets.all(16),
+            child: GridView.count(
+              crossAxisCount: columns,
+              crossAxisSpacing: 10,
+              mainAxisSpacing: 10,
+              childAspectRatio: screenWidth > 600 ? 1.1 : 0.85,
 
-              },
+              children: [
+
+                _buildCard(
+                  title: "Manage Interns",
+                  image: "assets/interns.png",
+                  description: "approve ,reject interns",
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const ManageInternsPage()),
+                    );
+                  },
+                ),
+
+                _buildCard(
+                  title: "Assign Mentors",
+                  image: "assets/assign.png",
+                  description: "Link interns to mentors and departments",
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const AssignInternPage()),
+                    );
+                  },
+                ),
+
+                _buildCard(
+                  title: "Schedules & Policies",
+                  image: "assets/schedule.png",
+                  description: "Upload office schedules & handbooks",
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const UploadSchedulePage()),
+                    );
+                  },
+                ),
+              ],
             ),
-
-           /* _buildCard(
-              title: "Corporate Validation",
-              image: "assets/verify.png",
-              description: "Approve company registrations",
-              onTap: () { Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const  ManageInternsPage()),
-              );},
-            ),*/
-
-            _buildCard(
-              title: "Assign Mentors",
-              image: "assets/assign.png",
-              description: "Link interns to mentors and departments",
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const  AssignInternPage()),
-                );
-
-              },
-            ),
-
-            _buildCard(
-              title: "Schedules & Policies",
-              image: "assets/schedule.png",
-              description: "Upload office schedules & handbooks",
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const  UploadSchedulePage()),
-                );
-              },
-            ),
-          ],
-        ),
+          );
+        },
       ),
     );
   }
@@ -108,9 +111,8 @@ class AdminPage extends StatelessWidget {
     required String description,
     required VoidCallback onTap,
   }) {
-   return GestureDetector(
+    return GestureDetector(
       onTap: onTap,
-
       child: Container(
         padding: const EdgeInsets.all(10),
         decoration: BoxDecoration(

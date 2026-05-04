@@ -25,15 +25,15 @@ class _AssignInternPageState extends State<AssignInternPage> {
   ];
 
   List<Map<String, String>> assignments = [];
+
   @override
   void initState() {
     super.initState();
     loadData();
   }
-  //-------------loading data------
+
   void loadData() async {
     final internsData = await UserService.getApprovedInterns();
-    print("INTERN DATA FROM API: $internsData");
     final mentorsData = await UserService.getApprovedMentors();
     final assignmentsData = await UserService.getAssignments();
 
@@ -64,104 +64,115 @@ class _AssignInternPageState extends State<AssignInternPage> {
       ),
 
       body: isLoading
-        ? const Center(child: CircularProgressIndicator())
-        : Padding(
-        padding: const EdgeInsets.all(16),
+          ? const Center(child: CircularProgressIndicator())
+          : LayoutBuilder(
+        builder: (context, constraints) {
+          double screenWidth = constraints.maxWidth;
+          double containerWidth = screenWidth > 700 ? 700 : screenWidth;
 
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
+          return Center(
+            child: SizedBox(
+              width: containerWidth,
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
 
-            const Text(
-              "Create Assignment",
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF3B3B6D),
-              ),
-            ),
+                    const Text(
+                      "Create Assignment",
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF3B3B6D),
+                      ),
+                    ),
 
-            const SizedBox(height: 20),
+                    const SizedBox(height: 20),
 
-            _buildUserDropdown(
-              hint: "Select Intern",
-              value: selectedIntern,
-              items: interns,
-              onChanged: (val) {
-                setState(() => selectedIntern = val);
-              },
-            ),
+                    _buildUserDropdown(
+                      hint: "Select Intern",
+                      value: selectedIntern,
+                      items: interns,
+                      onChanged: (val) {
+                        setState(() => selectedIntern = val);
+                      },
+                    ),
 
-            const SizedBox(height: 15),
+                    const SizedBox(height: 15),
 
-            _buildUserDropdown(
-              hint: "Select Mentor",
-              value: selectedMentor,
-              items: mentors,
-              onChanged: (val) {
-                setState(() => selectedMentor = val);
-              },
-            ),
+                    _buildUserDropdown(
+                      hint: "Select Mentor",
+                      value: selectedMentor,
+                      items: mentors,
+                      onChanged: (val) {
+                        setState(() => selectedMentor = val);
+                      },
+                    ),
 
-            const SizedBox(height: 15),
+                    const SizedBox(height: 15),
 
-            _buildDropdown(
-              hint: "Select Department",
-              value: selectedDepartment,
-              items: departments,
-              onChanged: (val) {
-                setState(() => selectedDepartment = val);
-              },
-            ),
+                    _buildDropdown(
+                      hint: "Select Department",
+                      value: selectedDepartment,
+                      items: departments,
+                      onChanged: (val) {
+                        setState(() => selectedDepartment = val);
+                      },
+                    ),
 
-            const SizedBox(height: 20),
+                    const SizedBox(height: 20),
 
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF3B3B6D),
-                  padding: const EdgeInsets.all(14),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF3B3B6D),
+                          padding: const EdgeInsets.all(14),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        onPressed: assignIntern,
+                        child: const Text(
+                          "Assign",
+                          style: TextStyle(color: Colors.white),
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    const Text(
+                      "Assigned Interns",
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF3B3B6D),
+                      ),
+                    ),
+
+                    const SizedBox(height: 10),
+
+                    SizedBox(
+                      height: 300,
+                      child: ListView.builder(
+                        itemCount: assignments.length,
+                        itemBuilder: (context, index) {
+                          final item = assignments[index];
+                          return _buildAssignmentCard(item);
+                        },
+                      ),
+                    ),
+                  ],
                 ),
-
-                onPressed:assignIntern,
-
-                child: const Text("Assign",style: TextStyle(color: Colors.white,))
               ),
             ),
-
-            const SizedBox(height: 20),
-
-            const Text(
-              "Assigned Interns",
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF3B3B6D),
-              ),
-            ),
-
-            const SizedBox(height: 10),
-
-            Expanded(
-              child: ListView.builder(
-                itemCount: assignments.length,
-                itemBuilder: (context, index) {
-                  final item = assignments[index];
-
-                  return _buildAssignmentCard(item);
-                },
-              ),
-            ),
-          ],
-        ),
+          );
+        },
       ),
     );
   }
 
-  // 🧩 Dropdown widget
   Widget _buildDropdown({
     required String hint,
     required String? value,
@@ -170,25 +181,21 @@ class _AssignInternPageState extends State<AssignInternPage> {
   }) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12),
-
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
       ),
-
       child: DropdownButton<String>(
         value: value,
         hint: Text(hint),
         isExpanded: true,
         underline: const SizedBox(),
-
         items: items.map((item) {
           return DropdownMenuItem(
             value: item,
             child: Text(item),
           );
         }).toList(),
-
         onChanged: onChanged,
       ),
     );
@@ -221,15 +228,14 @@ class _AssignInternPageState extends State<AssignInternPage> {
       ),
     );
   }
+
   Widget _buildAssignmentCard(Map<String, String> item) {
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
       padding: const EdgeInsets.all(12),
-
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
-
         boxShadow: const [
           BoxShadow(
             color: Colors.black12,
@@ -238,11 +244,9 @@ class _AssignInternPageState extends State<AssignInternPage> {
           ),
         ],
       ),
-
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-
           Text("Intern: ${item["intern"]}"),
           Text("Mentor: ${item["mentor"]}"),
           Text("Department: ${item["department"]}"),
@@ -250,7 +254,6 @@ class _AssignInternPageState extends State<AssignInternPage> {
       ),
     );
   }
-
 
   void assignIntern() async {
     if (selectedIntern == null ||
@@ -298,5 +301,4 @@ class _AssignInternPageState extends State<AssignInternPage> {
       );
     }
   }
-
 }

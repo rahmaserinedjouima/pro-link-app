@@ -29,7 +29,6 @@ class _WorkIdPageState extends State<WorkIdPage> {
 
       String dept = "Not assigned";
 
-      // 🔍 find this user's assignment
       for (var a in assignments) {
         if (a["intern_id"].toString() == UserService.currentUserId) {
           dept = a["department"];
@@ -63,17 +62,26 @@ class _WorkIdPageState extends State<WorkIdPage> {
         backgroundColor: const Color(0xFF3B3B6D),
       ),
 
-      body: Center(
-        child: loading
-            ? const CircularProgressIndicator(color: Colors.white)
-            : _buildIdCard(),
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          double screenWidth = constraints.maxWidth;
+          double cardWidth = screenWidth > 400 ? 320 : screenWidth * 0.85;
+
+          return Center(
+            child: loading
+                ? const CircularProgressIndicator(color: Colors.white)
+                : SingleChildScrollView(
+              child: _buildIdCard(cardWidth),
+            ),
+          );
+        },
       ),
     );
   }
 
-  Widget _buildIdCard() {
+  Widget _buildIdCard(double cardWidth) {
     return Container(
-      width: 320,
+      width: cardWidth,
       padding: const EdgeInsets.all(20),
 
       decoration: BoxDecoration(
@@ -104,6 +112,7 @@ class _WorkIdPageState extends State<WorkIdPage> {
 
           Text(
             name,
+            textAlign: TextAlign.center,
             style: const TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
@@ -115,6 +124,7 @@ class _WorkIdPageState extends State<WorkIdPage> {
 
           Text(
             "Department: $department",
+            textAlign: TextAlign.center,
             style: const TextStyle(
               fontSize: 12,
               color: Colors.grey,

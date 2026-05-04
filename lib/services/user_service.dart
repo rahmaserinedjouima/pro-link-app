@@ -4,7 +4,7 @@ import 'package:http/http.dart' as http;
 
 class UserService {
   static String currentUserId = "";
-  static const String baseUrl = "http://172.18.128.1/flutter_api";
+  static const String baseUrl = "http://localhost/flutter_api";
 // sign up
  /* static Future<Map<String, dynamic>> signup(
       String name,
